@@ -8,56 +8,51 @@ type ServiceRequest = {
   createdAt: string;
 };
 
-export default function App() {
+function App() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [search, setSearch] = useState("");
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/requests")
-      .then((response) => {
-        if (!response.ok) throw new Error("Failed to fetch requests");
-        return response.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
         setRequests(data.requests);
         setTotal(data.total);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      });
   }, []);
 
+  function handleSearch() {
+    fetch(`/api/requests?search=${encodeURIComponent(search)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setRequests(data.requests);
+        setTotal(data.total);
+      });
+  }
+
   return (
-    <main style={{ padding: "40px", fontFamily: "Arial" }}>
-      <h1>Arlington Service Request Intelligence</h1>
-      <p>Explore real Arlington County service requests.</p>
+    <div style={{ padding: 30 }}>
+      <h1>Arlington Service Requests</h1>
+      <p>{total.toLocaleString()} requests found</p>
 
-      <h2>{total.toLocaleString()} Total Requests</h2>
+      <input
+        placeholder="Search requests"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
 
-      {loading ? (
-        <p>Loading requests...</p>
-      ) : (
-        <table cellPadding="12">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Service</th>
-              <th>Status</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {requests.map((request) => (
-              <tr key={request.serviceRequestId}>
-                <td>{request.serviceRequestId}</td>
-                <td>{request.name}</td>
-                <td>{request.status}</td>
-                <td>{request.createdAt}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </main>
+      <button onClick={handleSearch}>Search</button>
+
+      <ul>
+        {requests.map((request) => (
+          <li key={request.serviceRequestId}>
+            {request.name} - {request.status}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
+
+export default App;
