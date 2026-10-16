@@ -11,6 +11,7 @@ type ServiceRequest = {
 function App() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
@@ -23,7 +24,7 @@ function App() {
   }, []);
 
   function handleSearch() {
-    fetch(`/api/requests?search=${encodeURIComponent(search)}`)
+    fetch(`/api/requests?search=${encodeURIComponent(search)}&status=${status}`)
       .then((res) => res.json())
       .then((data) => {
         setRequests(data.requests);
@@ -43,6 +44,12 @@ function App() {
       />
 
       <button onClick={handleSearch}>Search</button>
+
+      <select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <option value="">All statuses</option>
+        <option value="open">Open</option>
+        <option value="closed">Closed</option>
+      </select>
 
       <ul>
         {requests.map((request) => (
